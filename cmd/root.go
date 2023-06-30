@@ -8,13 +8,13 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use: "kustomize-flag",
+		Use: "flagops",
 		Short: "A cli tool for using feature flags to control kustomize output",
 	}
 )
 
 func init() {
-	rootCmd.PersistentFlags().String("config", "./.kustomgen.yaml", "Path to configuration file")
+	rootCmd.PersistentFlags().String("config", "", "Path to configuration file")
 	rootCmd.PersistentFlags().Bool("verbose", false, "Enable verbose logging")
 }
 

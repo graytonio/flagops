@@ -34,8 +34,10 @@ func LoadConfig(configFile string) {
 	log.WithField("config_file", viper.ConfigFileUsed()).Debug("Loading Config File")
 
 	err := viper.ReadInConfig()
-	cobra.CheckErr(err)
-
+	if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		cobra.CheckErr(err)
+	}
+	
 	log.WithField("config_file", viper.ConfigFileUsed()).Debug("Config Loaded")
 
 	err = viper.Unmarshal(&conf)
