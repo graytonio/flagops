@@ -28,7 +28,7 @@ func LoadConfig(configFile string) {
 		viper.SetConfigFile(configFile)
 	} else {
 		viper.AddConfigPath(".")
-		viper.SetConfigName(".flagops.yaml")
+		viper.SetConfigName(".flagops")
 	}
 
 	log.WithField("config_file", viper.ConfigFileUsed()).Debug("Loading Config File")
