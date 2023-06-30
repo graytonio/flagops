@@ -2,6 +2,12 @@
 
 A cli designed to help use feature flag services in git-ops deployment structures.
 
+## Installation
+
+```bash
+go install github.com/graytonio/flagops@latest
+```
+
 ## Usage
 
 The main command of the cli is the generate command which takes input templates and applies the feature flags from your provider to the template.

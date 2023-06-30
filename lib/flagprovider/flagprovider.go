@@ -3,7 +3,7 @@ package flagprovider
 import (
 	"fmt"
 
-	"github.com/graytonio/kustomize-templater/lib/config"
+	"github.com/graytonio/flagops/lib/config"
 	"github.com/sirupsen/logrus"
 )
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/graytonio/kustomize-templater/cmd"
+	"github.com/graytonio/flagops/cmd"
 )
 
 func main() {

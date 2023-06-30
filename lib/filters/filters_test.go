@@ -3,7 +3,7 @@ package filters_test
 import (
 	"testing"
 
-	"github.com/graytonio/kustomize-templater/lib/filters"
+	"github.com/graytonio/flagops/lib/filters"
 	"github.com/sirupsen/logrus"
 )
 

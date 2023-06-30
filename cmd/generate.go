@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/graytonio/kustomize-templater/lib/config"
-	"github.com/graytonio/kustomize-templater/lib/filters"
-	"github.com/graytonio/kustomize-templater/lib/flagprovider"
+	"github.com/graytonio/flagops/lib/config"
+	"github.com/graytonio/flagops/lib/filters"
+	"github.com/graytonio/flagops/lib/flagprovider"
 	"github.com/noirbizarre/gonja"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Flagsmith/flagsmith-go-client/v2"
-	"github.com/graytonio/kustomize-templater/lib/config"
+	"github.com/graytonio/flagops/lib/config"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )

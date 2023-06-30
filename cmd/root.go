@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/graytonio/kustomize-templater/lib/config"
+	"github.com/graytonio/flagops/lib/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
