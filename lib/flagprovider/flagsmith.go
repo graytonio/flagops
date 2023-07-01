@@ -16,6 +16,7 @@ type FlagsmithFeatureFlagProvider struct {
 
     apiKey string
     client *flagsmith.Client
+    mapCache FeatureMap
 }
 
 func (fp *FlagsmithFeatureFlagProvider) New(providerConfig config.ProviderConfig, log *logrus.Entry) (FeatureFlagProvider, error) {
@@ -84,12 +85,13 @@ func (fp* FlagsmithFeatureFlagProvider) parseFlagValue(value any) (string) {
     }
 }
 
-// TODO Cache feature map results for the run
 func (fp *FlagsmithFeatureFlagProvider) GetFeatureMap(log *logrus.Entry) (FeatureMap, error) {
-    features := make(map[string]any)
-
     if fp.Identity == "" {
         fp.Identity = "anonymous"
+    }
+
+    if len(fp.mapCache) > 0 {
+        return fp.mapCache, nil
     }
 
     log = log.WithField("provider", "flagsmith").WithField("identity", fp.Identity)
@@ -107,15 +109,15 @@ func (fp *FlagsmithFeatureFlagProvider) GetFeatureMap(log *logrus.Entry) (Featur
         err := yaml.Unmarshal([]byte(fp.parseFlagValue(flag.Value)), &data)
         if err != nil {
             log.WithField("value", flag.Value).Debug("Not valid yaml setting raw text value")
-            features[flag.FeatureName] = flag.Value
+            fp.mapCache[flag.FeatureName] = flag.Value
         } else {
             log.WithField("value", data).Debug("Found valid yaml. Setting map")
-            features[flag.FeatureName] = data
+            fp.mapCache[flag.FeatureName] = data
         }
 
-       features[fmt.Sprintf("%s_enabled", flag.FeatureName)] = flag.Enabled
+       fp.mapCache[fmt.Sprintf("%s_enabled", flag.FeatureName)] = flag.Enabled
        log.WithField("enabled", flag.Enabled).Debug("Added feature flag")
     }
 
-    return features, nil
+    return fp.mapCache, nil
 }
