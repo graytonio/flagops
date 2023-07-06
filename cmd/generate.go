@@ -41,6 +41,19 @@ func ensureFilePath(filePath string) {
 	}
 }
 
+func getDestinationFilePath(sourceFile string, conf *config.Config) string {
+	if conf.Destination == "" {
+		return ""
+	}
+
+	if !conf.Recursive {
+		return conf.Destination
+	}
+
+	trimmedSourceFile := strings.TrimPrefix(sourceFile, conf.Source)
+	return path.Join(conf.Destination, trimmedSourceFile)
+}
+
 func generateFile(provider flagprovider.FeatureFlagProvider, sourceFile string, log *logrus.Entry) error {
 	log = log.WithField("path", sourceFile)
 
@@ -69,21 +82,10 @@ func generateFile(provider flagprovider.FeatureFlagProvider, sourceFile string, 
 
 	var destFile *os.File = os.Stdout
 
-	if conf.Destination != "" {
-		var destFilePath = conf.Destination
-		if conf.Recursive {
-			var startIndex = 1
-			if path.IsAbs(sourceFile) {
-				startIndex = 2
-			}
-			sourceFile = path.Join(strings.Split(sourceFile, "/")[startIndex:]...)
-			destFilePath = path.Join(conf.Destination, sourceFile)
-		}
-
-		if path.Ext(destFilePath) == ".j2" || path.Ext(destFilePath) == ".tpl" {
-			destFilePath = strings.TrimSuffix(destFilePath, path.Ext(destFilePath))
-		}
-
+	destFilePath := getDestinationFilePath(sourceFile, conf)
+	log.WithField("destination_file_path", destFilePath).Debug("Calculating Destination")
+	if destFilePath != "" {
+		log.WithField("destination_file_path", destFilePath).Debug("Writing to output file")
 		ensureFilePath(destFilePath)
 		destFile, err = os.OpenFile(destFilePath, os.O_RDWR | os.O_CREATE | os.O_TRUNC, 0755)
 		if err != nil {
@@ -92,7 +94,6 @@ func generateFile(provider flagprovider.FeatureFlagProvider, sourceFile string, 
 	}
 
 	log.WithField("dest", destFile.Name()).Debug("Writing output")
-
 	_, err = io.WriteString(destFile, output)
 	return err
 }
@@ -124,6 +125,7 @@ var generateCommand = &cobra.Command{
 				return nil
 			}
 
+			// TODO Support source file glob
 			return generateFile(provider, filePath, log)
 		})
 		cobra.CheckErr(err)
