@@ -94,6 +94,7 @@ func (fp *FlagsmithFeatureFlagProvider) GetFeatureMap(log *logrus.Entry) (Featur
         return fp.mapCache, nil
     }
 
+    fp.mapCache = make(FeatureMap)
     log = log.WithField("provider", "flagsmith").WithField("identity", fp.Identity)
     log.Debug("Parsing Feature Flags")
     flags, err := fp.client.GetIdentityFlags(fp.Identity, fp.GetTraitsSlice())
