@@ -10,6 +10,7 @@ import (
 type ProviderConfig struct {
 	APIKey string `mapstructure:"apiKey"`
 	BaseURL string `mapstructure:"baseUrl"`
+	Path string `mapstructure:"path"`
 }
 
 type Config struct {
@@ -23,6 +24,10 @@ type Config struct {
 
 var conf Config
 
+func setDefaults() {
+	viper.SetDefault("providerConfig.path", "values.yaml")
+}
+
 func LoadConfig(configFile string) {
 	if configFile != "" {
 		viper.SetConfigFile(configFile)
@@ -30,6 +35,8 @@ func LoadConfig(configFile string) {
 		viper.AddConfigPath(".")
 		viper.SetConfigName(".flagops")
 	}
+
+	setDefaults()
 
 	log.WithField("config_file", viper.ConfigFileUsed()).Debug("Loading Config File")
 

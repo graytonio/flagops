@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// TODO Add provider setting to command flags
 func init() {
 	rootCmd.AddCommand(generateCommand)
 	generateCommand.Flags().StringP("src", "s", "", "Input file to generate or directory to start from is using recursive")
@@ -28,7 +29,7 @@ func init() {
 	generateCommand.Flags().StringP("dest", "d", "", "Write template to file instead of stdout. If recursive is enabled the output base directory (default: build)")
 	viper.BindPFlag("dest", generateCommand.Flags().Lookup("dest"))
 
-	generateCommand.Flags().StringP("provider", "p", "flagsmith", "Provider type to pull context from")
+	generateCommand.Flags().StringP("provider", "p", "file", "Provider type to pull context from")
 	viper.BindPFlag("provider", generateCommand.Flags().Lookup("provider"))
 
 	generateCommand.Flags().StringArrayP("filter", "f", []string{}, "Apply a filter over the produced template")

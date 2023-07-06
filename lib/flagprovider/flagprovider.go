@@ -12,6 +12,7 @@ var ProviderTable map[string]FeatureFlagProvider
 func init() {
 	ProviderTable = map[string]FeatureFlagProvider{
 		"flagsmith": &FlagsmithFeatureFlagProvider{},
+		"file": &FileFeatureFlagProvider{},
 	}
 }
 
