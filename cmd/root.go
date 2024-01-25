@@ -1,42 +1,63 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/graytonio/flagops/lib/config"
-	log "github.com/sirupsen/logrus"
+	"github.com/graytonio/flagops/lib/provider"
+	"github.com/graytonio/flagops/lib/templ"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 var (
-	rootCmd = &cobra.Command{
-		Use: "flagops",
-		Short: "A cli tool for using feature flags to control kustomize output",
-	}
+	verbose bool
+	configPath string
 )
 
-func init() {
-	rootCmd.PersistentFlags().String("config", "", "Path to configuration file")
-	rootCmd.PersistentFlags().Bool("verbose", false, "Enable verbose logging")
-}
-
-func Execute() error {
-
-	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		configFile, err := rootCmd.PersistentFlags().GetString("config")
-		if err != nil {
-			return err
-		}
-	
-		verbose, err := rootCmd.PersistentFlags().GetBool("verbose")
-		if err != nil {
-			return err
-		}
+var rootCmd = &cobra.Command{
+	Use: "flagops",
+	Short: "Generate files based on the templates",
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if verbose {
-			log.SetLevel(log.DebugLevel)
+			logrus.SetLevel(logrus.DebugLevel)
 		}
-	
-		config.LoadConfig(configFile)
+
+		conf, err := config.LoadConfig(configPath)
+		if err != nil {
+		  return err
+		}
+
+		providers, err := provider.ConfigureProviders(conf.Envs)
+		if err != nil {
+		  return err
+		}
+
+		engines, err := templ.CreateEngines(conf.Paths, providers)
+		if err != nil {
+		  return err
+		}
+
+		for _, engine := range engines {
+			err = engine.Execute()
+			if err != nil {
+			  return err
+			}
+		}
+
 		return nil
-	}
-	return rootCmd.Execute()
+	},
 }
 
+func init() {
+	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "Path to config file (default ./.flagops)")
+	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Enable verbose logging")
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
