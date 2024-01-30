@@ -210,6 +210,14 @@ func (te *TemplateEngine) lookupFlagValue(feature string) (any, error) {
 		return data, nil
 	}
 
+	if strings.HasSuffix(feature, "_enabled") {
+		data, err := te.FlagProvider.BooleanValue(context.Background(), strings.TrimSuffix(feature, "_enabled"), false, openfeature.EvaluationContext{})
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
+	}
+
 	data, err := te.FlagProvider.StringValue(context.Background(), feature, "", openfeature.EvaluationContext{})
 	if err != nil {
 		return nil, err

@@ -1,6 +1,6 @@
 module github.com/graytonio/flagops
 
-go 1.21.3
+go 1.21
 
 require (
 	github.com/Flagsmith/flagsmith-go-client/v3 v3.3.0
