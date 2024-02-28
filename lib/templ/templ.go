@@ -1,16 +1,15 @@
 package templ
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"io/fs"
 	"path"
 	"path/filepath"
-	"strings"
 	"text/template"
 	"time"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-billy/v5/util"
@@ -23,13 +22,14 @@ import (
 )
 
 type TemplateEngine struct {
-	SourceFilesystem billy.Filesystem
+	SourceFilesystem      billy.Filesystem
 	DestinationFilesystem billy.Filesystem
-	FlagProvider *openfeature.Client
-	RootPath string
-	
+	FlagProvider          *openfeature.Client
+	RootPath              string
+
 	files []string
-	dest config.Destination
+	dest  config.Destination
+	funcMap map[string]any
 
 	gitRepo *git.Repository
 }
@@ -37,8 +37,8 @@ type TemplateEngine struct {
 func NewTemplateEngine(rootPath string, dest config.Destination, provider *openfeature.Client) (*TemplateEngine, error) {
 	engine := &TemplateEngine{
 		SourceFilesystem: osfs.New("."),
-		RootPath: rootPath,
-		FlagProvider: provider,
+		RootPath:         rootPath,
+		FlagProvider:     provider,
 
 		dest: dest,
 	}
@@ -53,11 +53,17 @@ func NewTemplateEngine(rootPath string, dest config.Destination, provider *openf
 		return nil, err
 	}
 
+	funcMap := sprig.GenericFuncMap()
+	funcMap["env"] = engine.env
+	funcMap["toYaml"] = engine.toYAML
+	funcMap["fromYaml"] = engine.fromYAML
+	engine.funcMap = funcMap
+
 	return engine, nil
 }
 
 // Init configured destination fs
-func (te *TemplateEngine) setupFilesystem() (error) {
+func (te *TemplateEngine) setupFilesystem() error {
 	switch te.dest.Type {
 	case "file":
 		te.DestinationFilesystem = osfs.New(".")
@@ -69,7 +75,7 @@ func (te *TemplateEngine) setupFilesystem() (error) {
 
 		w, err := repo.Worktree()
 		if err != nil {
-		  return err
+			return err
 		}
 
 		te.DestinationFilesystem = w.Filesystem
@@ -81,7 +87,7 @@ func (te *TemplateEngine) setupFilesystem() (error) {
 }
 
 // Clean up any steps for filesystems like git commit
-func (te *TemplateEngine) finalizeFilesystem() (error) {
+func (te *TemplateEngine) finalizeFilesystem() error {
 	switch te.dest.Type {
 	case "file":
 		return nil
@@ -92,7 +98,7 @@ func (te *TemplateEngine) finalizeFilesystem() (error) {
 	}
 }
 
-func (te *TemplateEngine) finalizeGitRepo() (error) {
+func (te *TemplateEngine) finalizeGitRepo() error {
 	w, err := te.gitRepo.Worktree()
 	if err != nil {
 		return err
@@ -105,18 +111,18 @@ func (te *TemplateEngine) finalizeGitRepo() (error) {
 
 	_, err = w.Commit("flagops: Built templates", &git.CommitOptions{
 		Author: &object.Signature{
-			Name: "FlagOps",
+			Name:  "FlagOps",
 			Email: "flagops@gmail.com",
-			When: time.Now(),
+			When:  time.Now(),
 		},
 	})
 	if err != nil {
-	  return err
+		return err
 	}
 
 	err = te.gitRepo.Push(&git.PushOptions{})
 	if err != nil {
-	  return err
+		return err
 	}
 
 	return nil
@@ -141,12 +147,12 @@ func (te *TemplateEngine) getFileOutputDestination(originalPath string) (string,
 	if err != nil {
 		return "", err
 	}
-	
+
 	return path.Join(te.dest.Path, relPath), nil
 }
 
 // Iterates each file in the engine and writes it to the destination
-func (te *TemplateEngine) Execute() (error) {
+func (te *TemplateEngine) Execute() error {
 	for _, file := range te.files {
 		err := te.executeFileTemplate(file)
 		if err != nil {
@@ -156,7 +162,7 @@ func (te *TemplateEngine) Execute() (error) {
 	return te.finalizeFilesystem()
 }
 
-func (te *TemplateEngine) executeFileTemplate(path string) (error) {
+func (te *TemplateEngine) executeFileTemplate(path string) error {
 	file, err := te.SourceFilesystem.Open(path)
 	if err != nil {
 		return err
@@ -168,16 +174,8 @@ func (te *TemplateEngine) executeFileTemplate(path string) (error) {
 	}
 
 	templ, err := template.New(path).
-	Delims("[{", "}]").
-	Funcs(template.FuncMap{
-		"env": func (feature string) any {
-			data, err := te.lookupFlagValue(feature)
-			if err != nil {
-				return nil
-			}
-			return data
-		},
-	}).Parse(string(data))
+		Delims("[{", "}]").
+		Funcs(te.funcMap).Parse(string(data))
 	if err != nil {
 		return err
 	}
@@ -199,29 +197,4 @@ func (te *TemplateEngine) executeFileTemplate(path string) (error) {
 	}
 
 	return nil
-}
-
-func (te *TemplateEngine) lookupFlagValue(feature string) (any, error) {
-	if strings.Contains(feature, ".") {
-		data, err := te.FlagProvider.ObjectValue(context.Background(), feature, nil, openfeature.EvaluationContext{})
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
-	}
-
-	if strings.HasSuffix(feature, "_enabled") {
-		data, err := te.FlagProvider.BooleanValue(context.Background(), strings.TrimSuffix(feature, "_enabled"), false, openfeature.EvaluationContext{})
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
-	}
-
-	data, err := te.FlagProvider.StringValue(context.Background(), feature, "", openfeature.EvaluationContext{})
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
 }
