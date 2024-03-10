@@ -2,7 +2,6 @@ package templ
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/open-feature/go-sdk/openfeature"
@@ -19,16 +18,19 @@ func (te *TemplateEngine) env(feature string) (any, error) {
 			return nil, err
 		}
 
-		fmt.Printf("%+v", data)
-
 		var value = data
 		for i := 1; i < len(parts); i++ {
 			v, ok := value.(map[string]any)
 			if !ok {
+				value = "nil"
 				break
 			}
 
-			value = v[parts[i]]
+			value, ok = v[parts[i]]
+			if !ok {
+				value = "nil"
+				break
+			}
 			continue
 		}
 
