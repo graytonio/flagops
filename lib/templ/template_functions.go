@@ -8,33 +8,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-
 func (te *TemplateEngine) env(feature string) (any, error) {
 	if strings.Contains(feature, ".") {
 		parts := strings.Split(feature, ".")
-		featureName := parts[0]
-		data, err := te.FlagProvider.ObjectValue(context.Background(), featureName, map[string]any{}, openfeature.EvaluationContext{})
-		if err != nil {
-			return nil, err
-		}
-
-		var value = data
-		for i := 1; i < len(parts); i++ {
-			v, ok := value.(map[string]any)
-			if !ok {
-				value = "nil"
-				break
-			}
-
-			value, ok = v[parts[i]]
-			if !ok {
-				value = "nil"
-				break
-			}
-			continue
-		}
-
-		return value, nil
+		return te.parseObjectFlag(parts[0], parts[1:])
 	}
 
 	if strings.HasSuffix(feature, "_enabled") {
@@ -53,6 +30,31 @@ func (te *TemplateEngine) env(feature string) (any, error) {
 	return data, nil
 }
 
+// Fetch feature flag flagKey and interpret the value as a json object. Index into the object for each subKeys
+func (te *TemplateEngine) parseObjectFlag(flagKey string, subKeys []string) (any, error) {
+	data, err := te.FlagProvider.ObjectValue(context.Background(), flagKey, map[string]any{}, openfeature.EvaluationContext{})
+	if err != nil {
+		return nil, err
+	}
+
+	var value = data
+	for i := 1; i < len(subKeys); i++ {
+		v, ok := value.(map[string]any)
+		if !ok {
+			value = "nil"
+			break
+		}
+
+		value, ok = v[subKeys[i]]
+		if !ok {
+			value = "nil"
+			break
+		}
+		continue
+	}
+
+	return value, nil
+}
 
 // This has been copied from helm and may be removed as soon as it is retrofited in sprig
 // toYAML takes an interface, marshals it to yaml, and returns a string. It will

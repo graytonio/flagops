@@ -3,7 +3,6 @@ package config
 type ProviderType string
 
 const (
-	File ProviderType = "file"
 	Flagsmith ProviderType = "flagsmith"
 )
 
