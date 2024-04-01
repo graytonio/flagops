@@ -52,6 +52,10 @@ This will read the config file from the current directory and output the templat
 
 Flagops usese the golang templating syntax however it uses `[{` and `}]` as deliminators. In order to use a feature flag as part of your templates you can use the special `env` template function.
 
+### Template Functions
+
+In addition to the `env` tempalte function the templates have access to all of the [sprig](https://masterminds.github.io/sprig/) template functions, as well as `toYaml` and `fromYaml` functions directly from helm.
+
 ### Basic Usage
 
 By default using the env function with a key will lookup a feature flag with a given key and interpret any value as a string.
