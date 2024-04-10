@@ -24,6 +24,11 @@ func (te *TemplateEngine) env(feature string) (any, error) {
 
 	data, err := te.FlagProvider.StringValue(context.Background(), feature, "", openfeature.EvaluationContext{})
 	if err != nil {
+		// Edge case where evaluating a disabled flag in some providers results in a null value
+		if strings.Contains(err.Error(), "TYPE_MISMATCH") {
+			return "", nil
+		}
+
 		return nil, err
 	}
 
