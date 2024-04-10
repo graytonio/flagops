@@ -43,7 +43,7 @@ func (te *TemplateEngine) parseObjectFlag(flagKey string, subKeys []string) (any
 	}
 
 	var value = data
-	for i := 1; i < len(subKeys); i++ {
+	for i := 0; i < len(subKeys); i++ {
 		v, ok := value.(map[string]any)
 		if !ok {
 			value = "nil"
