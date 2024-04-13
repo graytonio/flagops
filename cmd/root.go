@@ -22,6 +22,7 @@ var rootCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if verbose {
 			logrus.SetLevel(logrus.DebugLevel)
+			logrus.SetReportCaller(true)
 		}
 
 		conf, err := config.LoadConfig(configPath)

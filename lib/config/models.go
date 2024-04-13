@@ -37,6 +37,9 @@ type Destination struct {
 
 	// Root path of output. For git type relative to repo root
 	Path string `mapstructure:"path"`
+
+	// Do not delete any existing files in destination only template and update specified files
+	UpsertMode bool `mapstructure:"upsert"`
 }
 
 type Config struct {

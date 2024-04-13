@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"os"
 	"path"
 	"path/filepath"
 	"text/template"
@@ -27,8 +28,8 @@ type TemplateEngine struct {
 	FlagProvider          *openfeature.Client
 	RootPath              string
 
-	files []string
-	dest  config.Destination
+	files   []string
+	dest    config.Destination
 	funcMap map[string]any
 
 	gitRepo *git.Repository
@@ -106,10 +107,11 @@ func (te *TemplateEngine) finalizeGitRepo() error {
 
 	stat, err := w.Status()
 	if err != nil {
-	  return err
+		return err
 	}
 
 	if stat.IsClean() {
+		logrus.Debug("noting to commit")
 		return nil
 	}
 
@@ -119,7 +121,7 @@ func (te *TemplateEngine) finalizeGitRepo() error {
 	if err != nil {
 		return err
 	}
-	
+
 	_, err = w.Commit("flagops: Built templates", &git.CommitOptions{
 		AllowEmptyCommits: false,
 		Author: &object.Signature{
@@ -163,8 +165,42 @@ func (te *TemplateEngine) getFileOutputDestination(originalPath string) (string,
 	return path.Join(te.dest.Path, relPath), nil
 }
 
+func (te *TemplateEngine) cleanOutputDestination(path string) error {
+	stat, err := te.DestinationFilesystem.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	if !stat.IsDir() {
+		return os.Remove(path)
+	}
+
+	names, err := te.DestinationFilesystem.ReadDir(path)
+	if err != nil {
+		return err
+	}
+
+	for _, name := range names {
+		err = util.RemoveAll(te.DestinationFilesystem, filepath.Join(path, name.Name()))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Iterates each file in the engine and writes it to the destination
 func (te *TemplateEngine) Execute() error {
+	if !te.dest.UpsertMode {
+		logrus.WithField("upsert_mode", te.dest.UpsertMode).Debug("cleaning output directory")
+		err := te.cleanOutputDestination(te.dest.Path)
+		if err != nil {
+			return err
+		}
+	}
 	for _, file := range te.files {
 		err := te.executeFileTemplate(file)
 		if err != nil {
