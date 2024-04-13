@@ -104,12 +104,24 @@ func (te *TemplateEngine) finalizeGitRepo() error {
 		return err
 	}
 
-	err = w.AddGlob("*")
+	stat, err := w.Status()
+	if err != nil {
+	  return err
+	}
+
+	if stat.IsClean() {
+		return nil
+	}
+
+	err = w.AddWithOptions(&git.AddOptions{
+		All: true,
+	})
 	if err != nil {
 		return err
 	}
-
+	
 	_, err = w.Commit("flagops: Built templates", &git.CommitOptions{
+		AllowEmptyCommits: false,
 		Author: &object.Signature{
 			Name:  "FlagOps",
 			Email: "flagops@gmail.com",
