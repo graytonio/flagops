@@ -94,3 +94,4 @@ This is the list of currently supported providers:
 
 - Git Repo
 - Local Path
+- Console
