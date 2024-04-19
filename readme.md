@@ -72,7 +72,6 @@ Paths are directories or individual files that should be templated and placed in
 | ---- | ----------------------------------------------------------------------------------------------- |
 | path | Path relative to the `.flagops` file to source the templates from. Can be a directory or a file |
 | env  | Which configured environment to use for flag evaluation                                         |
-
 | dest | Configure destination for output templates |
 | dest.type | Configure destination type |
 | dest.path | Path relative to destination root to where to output the templates to. Any missing directories will automatically be created. |
