@@ -9,7 +9,7 @@ func LoadConfig(path string) (*Config, error) {
 	v.AddConfigPath(".")
 	v.SetConfigName(".flagops")
 	v.SetConfigType("yaml")
-	
+
 	if path != "" {
 		v.SetConfigFile(path)
 	}

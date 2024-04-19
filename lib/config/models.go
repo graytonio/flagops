@@ -6,10 +6,18 @@ const (
 	Flagsmith ProviderType = "flagsmith"
 )
 
+type DestinationType string
+
+const (
+	Git DestinationType = "git"
+	File DestinationType = "file"
+	Console DestinationType = "console"
+)
+
 type Environment struct {
 	// Provider to configure for this environment
 	Provider ProviderType `mapstructure:"provider"`
-	
+
 	// Api key to pass to provider
 	APIKey string `mapstructure:"apiKey"`
 
@@ -26,11 +34,17 @@ type Path struct {
 
 	// Output definition
 	Destination Destination `mapstructure:"dest"`
+
+	// Unique name for this set of templates
+	Identity string `mapstructure:"identity"`
+
+	// Key Value pairs to add context to template engine
+	Properties map[string]any `mapstructure:"properties"`
 }
 
 type Destination struct {
 	// Output type (file, git)
-	Type string `mapstructure:"type"`
+	Type DestinationType `mapstructure:"type"`
 
 	// For git type define output git repository
 	Repo string `mapstructure:"repo"`
@@ -43,6 +57,6 @@ type Destination struct {
 }
 
 type Config struct {
-	Envs map[string]Environment `mapstructure:"envs"`
-	Paths []Path `mapstructure:"paths"`
+	Envs  map[string]Environment `mapstructure:"envs"`
+	Paths []Path                 `mapstructure:"paths"`
 }

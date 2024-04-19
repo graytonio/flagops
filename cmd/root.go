@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/graytonio/flagops/lib/config"
 	"github.com/graytonio/flagops/lib/provider"
@@ -12,12 +13,14 @@ import (
 )
 
 var (
-	verbose bool
+	verbose    bool
 	configPath string
+
+	useEnv bool
 )
 
 var rootCmd = &cobra.Command{
-	Use: "flagops",
+	Use:   "flagops",
 	Short: "Generate files based on the templates",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if verbose {
@@ -25,35 +28,79 @@ var rootCmd = &cobra.Command{
 			logrus.SetReportCaller(true)
 		}
 
-		conf, err := config.LoadConfig(configPath)
-		if err != nil {
-		  return err
+		if useEnv {
+			return executeEnvConfig()
 		}
 
-		providers, err := provider.ConfigureProviders(conf.Envs)
-		if err != nil {
-		  return err
-		}
-
-		engines, err := templ.CreateEngines(conf.Paths, providers)
-		if err != nil {
-		  return err
-		}
-
-		for _, engine := range engines {
-			err = engine.Execute()
-			if err != nil {
-			  return err
-			}
-		}
-
-		return nil
+		return executeConfigFilePaths()
 	},
+}
+
+func executeEnvConfig() error {
+	conf, err := config.LoadConfig(configPath)
+	if err != nil {
+		return err
+	}
+
+	providers, err := provider.ConfigureProviders(conf.Envs)
+	if err != nil {
+		return err
+	}
+
+	upsertMode, err := strconv.ParseBool(os.Getenv("FLAGOPS_UPSERT"))
+	if err != nil {
+	  return err
+	}
+
+	source := config.Path{
+		Path: os.Getenv("FLAGOPS_SOURCE_PATH"),
+		Env: os.Getenv("FLAGOPS_ENVIRONMENT"),
+		Identity: os.Getenv("FLAGOPS_IDENTITY"),
+		Destination: config.Destination{
+			Type: config.DestinationType(os.Getenv("FLAGOPS_DESTINATION_TYPE")),
+			Path: os.Getenv("FLAGOPS_DESTINATION_PATH"),
+			Repo: os.Getenv("FLAGOPS_DESTINATION_REPO"),
+			UpsertMode: upsertMode,
+		},
+	}
+
+	engine, err := templ.NewTemplateEngine(source, providers[source.Env])
+	if err != nil {
+	  return err
+	}
+
+	return engine.Execute()
+}
+
+func executeConfigFilePaths() error {
+	conf, err := config.LoadConfig(configPath)
+	if err != nil {
+		return err
+	}
+
+	providers, err := provider.ConfigureProviders(conf.Envs)
+	if err != nil {
+		return err
+	}
+
+	engines, err := templ.CreateEngines(conf.Paths, providers)
+	if err != nil {
+		return err
+	}
+
+	for _, engine := range engines {
+		err = engine.Execute()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "Path to config file (default ./.flagops)")
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Enable verbose logging")
+	rootCmd.PersistentFlags().BoolVar(&useEnv, "use-env", false, "Use env variables to configure path instead of config file")
 }
 
 func Execute() {

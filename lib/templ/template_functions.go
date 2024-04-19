@@ -8,6 +8,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func (te *TemplateEngine) getEvaluationContext() openfeature.EvaluationContext {
+	return openfeature.NewEvaluationContext(te.path.Identity, te.path.Properties)
+}
+
 func (te *TemplateEngine) env(feature string) (any, error) {
 	if strings.Contains(feature, ".") {
 		parts := strings.Split(feature, ".")
@@ -15,14 +19,14 @@ func (te *TemplateEngine) env(feature string) (any, error) {
 	}
 
 	if strings.HasSuffix(feature, "_enabled") {
-		data, err := te.FlagProvider.BooleanValue(context.Background(), strings.TrimSuffix(feature, "_enabled"), false, openfeature.EvaluationContext{})
+		data, err := te.FlagProvider.BooleanValue(context.Background(), strings.TrimSuffix(feature, "_enabled"), false, te.getEvaluationContext())
 		if err != nil {
 			return nil, err
 		}
 		return data, nil
 	}
 
-	data, err := te.FlagProvider.StringValue(context.Background(), feature, "", openfeature.EvaluationContext{})
+	data, err := te.FlagProvider.StringValue(context.Background(), feature, "", te.getEvaluationContext())
 	if err != nil {
 		// Edge case where evaluating a disabled flag in some providers results in a null value
 		if strings.Contains(err.Error(), "TYPE_MISMATCH") {
@@ -35,9 +39,9 @@ func (te *TemplateEngine) env(feature string) (any, error) {
 	return data, nil
 }
 
-// Fetch feature flag flagKey and interpret the value as a json object. Index into the object for each subKeys
+// Fetch feature flag flagKey and interpret the value as a json object. Recursively index the object until the desired key is found
 func (te *TemplateEngine) parseObjectFlag(flagKey string, subKeys []string) (any, error) {
-	data, err := te.FlagProvider.ObjectValue(context.Background(), flagKey, map[string]any{}, openfeature.EvaluationContext{})
+	data, err := te.FlagProvider.ObjectValue(context.Background(), flagKey, map[string]any{}, te.getEvaluationContext())
 	if err != nil {
 		return nil, err
 	}

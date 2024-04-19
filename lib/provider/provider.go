@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	flagsmithClient "github.com/Flagsmith/flagsmith-go-client/v3"
+	"github.com/go-logr/logr"
 	"github.com/graytonio/flagops/lib/config"
 	flagsmith "github.com/open-feature/go-sdk-contrib/providers/flagsmith/pkg"
 	"github.com/open-feature/go-sdk/openfeature"
@@ -36,5 +37,5 @@ func configureFlagsmithProvider(name string, env config.Environment) (*openfeatu
 	client := flagsmithClient.NewClient(env.APIKey)
 	provider := flagsmith.NewProvider(client, flagsmith.WithUsingBooleanConfigValue())
 	openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), provider)
-	return openfeature.NewClient(fmt.Sprintf("%s-%s", name, env.Provider)), nil
+	return openfeature.NewClient(fmt.Sprintf("%s-%s", name, env.Provider)).WithLogger(logr.Discard()), nil
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/go-git/go-git/v5/storage/memory"
 )
 
+// Caches git repos for reuse in multiple paths
 var repos map[string]*git.Repository = map[string]*git.Repository{}
 
 func Clone(url string) (*git.Repository, error) {
