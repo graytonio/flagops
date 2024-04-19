@@ -68,20 +68,22 @@ Environments are the different feature flag sources that flagops can pull from. 
 
 Paths are directories or individual files that should be templated and placed in a location. Individual files are templated and then sent to the configured destination path. Directories are templated recursively and preserve their directory structure when sent to the configured destination path.
 
-| Key       | Description                                                                                                                   |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| path      | Path relative to the `.flagops` file to source the templates from. Can be a directory or a file                               |
-| env       | Which configured environment to use for flag evaluation                                                                       |
-| dest      | Configure destination for output templates                                                                                    |
-| dest.type | Configure destination type                                                                                                    |
+| Key  | Description                                                                                     |
+| ---- | ----------------------------------------------------------------------------------------------- |
+| path | Path relative to the `.flagops` file to source the templates from. Can be a directory or a file |
+| env  | Which configured environment to use for flag evaluation                                         |
+
+| dest | Configure destination for output templates |
+| dest.type | Configure destination type |
 | dest.path | Path relative to destination root to where to output the templates to. Any missing directories will automatically be created. |
-| dest.git  | For git destinations the repo to push the changes to                                                                          |
+| dest.git | For git destinations the repo to push the changes to |
+| dest.upsert | By default the path in the destination is fully cleaned before inserting the templated files. If you would like to keep existing files in the destination that do not exist on the source set the upsert to false. |
 
 #### Supported Destination Types
 
-- `git`: Git Repo 
-- `file`: Local Path 
-- `console`: Console 
+- `git`: Git Repo
+- `file`: Local Path
+- `console`: Console
 
 ## Template Files
 
