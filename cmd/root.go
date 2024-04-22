@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/graytonio/flagops/lib/config"
 	"github.com/graytonio/flagops/lib/provider"
@@ -47,15 +48,22 @@ func executeEnvConfig() error {
 		return err
 	}
 
-	upsertMode, err := strconv.ParseBool(os.Getenv("FLAGOPS_UPSERT"))
-	if err != nil {
-	  return err
+	upsertMode := false
+	rawUpsertMode := os.Getenv("FLAGOPS_UPSERT")
+	
+	if rawUpsertMode != "" {
+		upsertMode, err = strconv.ParseBool(os.Getenv("FLAGOPS_UPSERT"))
+		if err != nil {
+		  return err
+		}
 	}
+	
 
 	source := config.Path{
 		Path: os.Getenv("FLAGOPS_SOURCE_PATH"),
 		Env: os.Getenv("FLAGOPS_ENVIRONMENT"),
 		Identity: os.Getenv("FLAGOPS_IDENTITY"),
+		Properties: parseEnvProps(),
 		Destination: config.Destination{
 			Type: config.DestinationType(os.Getenv("FLAGOPS_DESTINATION_TYPE")),
 			Path: os.Getenv("FLAGOPS_DESTINATION_PATH"),
@@ -70,6 +78,22 @@ func executeEnvConfig() error {
 	}
 
 	return engine.Execute()
+}
+
+func parseEnvProps() map[string]any {
+	env := os.Environ()
+	props := map[string]any{}
+	for _, e := range env {
+		if !strings.HasPrefix(e, "FLAGOPS_PROP_") {
+			continue
+		}
+		
+		parts := strings.Split(e, "=")
+		key := strings.ToLower(strings.TrimPrefix(parts[0], "FLAGOPS_PROP_"))
+		value := parts[1]
+		props[key] = value
+	}
+	return props
 }
 
 func executeConfigFilePaths() error {
