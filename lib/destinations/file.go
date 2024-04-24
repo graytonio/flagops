@@ -1,6 +1,8 @@
 package destinations
 
 import (
+	"path"
+
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/graytonio/flagops/lib/config"
@@ -21,6 +23,11 @@ func newFileOutput(conf config.Path) (*FileOutput, error) {
 
 // Init implements Output.
 func (fo *FileOutput) Init() error {
+	if path.IsAbs(fo.conf.Destination.Path) {
+		fo.fs = osfs.New("/")
+		return nil
+	} 
+
 	fo.fs = osfs.New(".")
 	return nil
 }
