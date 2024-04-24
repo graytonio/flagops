@@ -21,7 +21,7 @@ func (c *ConsoleOutput) Init() error {
 
 // ExecuteFile implements Output.
 func (c *ConsoleOutput) ExecuteFile(path string, content []byte) error {
-	fmt.Print(string(content))
+	fmt.Printf("%s\n", string(content))
 	return nil
 }
 

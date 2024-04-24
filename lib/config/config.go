@@ -7,6 +7,7 @@ import (
 func LoadConfig(path string) (*Config, error) {
 	v := viper.New()
 	v.AddConfigPath(".")
+	v.AddConfigPath("/flagops")
 	v.SetConfigName(".flagops")
 	v.SetConfigType("yaml")
 
