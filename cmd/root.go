@@ -20,6 +20,12 @@ var (
 	useEnv bool
 )
 
+func init() {
+	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "Path to config file (default ./.flagops)")
+	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Enable verbose logging")
+	rootCmd.PersistentFlags().BoolVar(&useEnv, "use-env", false, "Use env variables to configure path instead of config file")
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "flagops",
 	Short: "Generate files based on the templates",
@@ -57,7 +63,6 @@ func executeEnvConfig() error {
 		  return err
 		}
 	}
-	
 
 	source := config.Path{
 		Path: os.Getenv("FLAGOPS_SOURCE_PATH"),
@@ -84,6 +89,7 @@ func parseEnvProps() map[string]any {
 	env := os.Environ()
 	props := map[string]any{}
 	for _, e := range env {
+		e = strings.TrimPrefix(e, "ARGOCD_ENV_")
 		if !strings.HasPrefix(e, "FLAGOPS_PROP_") {
 			continue
 		}
@@ -119,12 +125,6 @@ func executeConfigFilePaths() error {
 		}
 	}
 	return nil
-}
-
-func init() {
-	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "Path to config file (default ./.flagops)")
-	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Enable verbose logging")
-	rootCmd.PersistentFlags().BoolVar(&useEnv, "use-env", false, "Use env variables to configure path instead of config file")
 }
 
 func Execute() {
