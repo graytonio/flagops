@@ -11,7 +11,7 @@ builds:
       - darwin
 release:
   extra_files:
-    - glob: ./manifests/generate-*.sh
+    - glob: ./manifests/*.sh
 
 archives:
   - format: tar.gz
