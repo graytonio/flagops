@@ -9,9 +9,6 @@ builds:
       - linux
       - windows
       - darwin
-release:
-  extra_files:
-    - glob: ./manifests/*.sh
 
 archives:
   - format: tar.gz
@@ -23,6 +20,10 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
+    files:
+      - LICENSE
+      - readme.md
+      - manifests/*.sh
     # use zip for windows archives
     format_overrides:
     - goos: windows
