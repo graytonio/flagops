@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-repo-server
+spec:
+  template:
+    spec:
+
+      # Mount SA token for Kubernets auth
+      # Note: In 2.4.0 onward, there is a dedicated SA for repo-server (not default)
+      # Note: This is not fully supported for Kubernetes < v1.19
+      automountServiceAccountToken: true
+
+      # Each of the embedded YAMLs inside cmp-plugin ConfigMap will be mounted into it's respective plugin sidecar
+      volumes:
+        - configMap:
+            name: cmp-plugin
+          name: cmp-plugin
+        - configMap:
+            name: flagops-env
+          name: flagops-env
+        - name: custom-tools
+          emptyDir: {}
+
+      # Download tools
+      initContainers:
+      - name: download-tools
+        image: registry.access.redhat.com/ubi8
+        env:
+          - name: FLAGOPS_VERSION
+            value: 0.1.13
+        command: [sh, -c]
+        args:
+          - >-
+            curl -L https://github.com/graytonio/flagops/releases/download/v$(FLAGOPS_VERSION)/flagops_Linux_x86_64.tar.gz -o flagops.tar.gz &&
+            tar -xvzf flagops.tar.gz &&
+            chmod +x flagops &&
+            chmod +x generate-*.sh
+            mv flagops /custom-tools/ &&
+            mv generate-*.sh /custom-tools/
+
+        volumeMounts:
+          - mountPath: /custom-tools
+            name: custom-tools
+
+      # flagops with Helm
+      containers:
+      - name: flagops-helm
+        command: [/var/run/argocd/argocd-cmp-server]
+        image: quay.io/argoproj/argocd:v2.7.9
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: tmp
+
+          # Register plugins into sidecar
+          - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+            subPath: flagops-helm.yaml
+            name: cmp-plugin
+
+          # Important: Mount tools into $PATH
+          - name: custom-tools
+            subPath: flagops
+            mountPath: /usr/local/bin/flagops
+          
+          - name: custom-tools
+            subPath: generate-helm.sh
+            mountPath: /scripts/generate.sh
+          - name: flagops-env
+            subPath: flagops-env.yaml
+            mountPath: /flagops/.flagops.yaml
+
+      # flagops with Kustomize
+      - name: flagops-kustomize
+        command: [/var/run/argocd/argocd-cmp-server]
+        image: quay.io/argoproj/argocd:v2.7.9
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: tmp
+
+          # Register plugins into sidecar
+          - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+            subPath: flagops-kustomize.yaml
+            name: cmp-plugin
+
+          # Important: Mount tools into $PATH
+          - name: custom-tools
+            subPath: flagops
+            mountPath: /usr/local/bin/flagops
+
+          - name: custom-tools
+            subPath: generate-kustomize.sh
+            mountPath: /scripts/generate.sh
+          - name: flagops-env
+            subPath: flagops-env.yaml
+            mountPath: /flagops/.flagops.yaml
+
+      # flagops with plain YAML
+      - name: flagops
+        command: [/var/run/argocd/argocd-cmp-server]
+        image: quay.io/argoproj/argocd:v2.7.9
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: tmp
+
+          # Register plugins into sidecar
+          - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+            subPath: flagops.yaml
+            name: cmp-plugin
+
+          # Important: Mount tools into $PATH
+          - name: custom-tools
+            subPath: flagops
+            mountPath: /usr/local/bin/flagops
+
+          - name: custom-tools
+            subPath: generate-raw.sh
+            mountPath: /scripts/generate.sh
+          - name: flagops-env
+            subPath: flagops-env.yaml
+            mountPath: /flagops/.flagops.yaml

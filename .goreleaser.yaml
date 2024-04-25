@@ -9,6 +9,9 @@ builds:
       - linux
       - windows
       - darwin
+release:
+  extra_files:
+    - glob: ./manifests/generate-*.sh
 
 archives:
   - format: tar.gz
