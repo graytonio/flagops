@@ -10,4 +10,4 @@ export FLAGOPS_DESTINATION_PATH=$(mktemp -d)
 # Run Generation
 flagops --use-env
 
-helm dependency build && helm template $ARGOCD_APP_NAME -n $ARGOCD_APP_NAMESPACE ${FLAGOPS_DESTINATION_PATH}
+helm dependency build ${FLAGOPS_DESTINATION_PATH} && helm template $ARGOCD_APP_NAME -n $ARGOCD_APP_NAMESPACE ${FLAGOPS_DESTINATION_PATH}
