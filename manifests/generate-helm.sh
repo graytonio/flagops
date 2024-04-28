@@ -15,4 +15,4 @@ flagops --use-env
 >&2 helm dependency build ${FLAGOPS_DESTINATION_PATH}
 
 >&2 echo "Infalting Helm Chart"
-helm template $ARGOCD_APP_NAME -n $ARGOCD_APP_NAMESPACE ${FLAGOPS_DESTINATION_PATH} --validate
+helm template $ARGOCD_APP_NAME -n $ARGOCD_APP_NAMESPACE ${ARGOCD_ENV_HELM_ARGS} ${FLAGOPS_DESTINATION_PATH}
