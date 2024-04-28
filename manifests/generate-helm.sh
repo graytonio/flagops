@@ -12,7 +12,7 @@ export FLAGOPS_DESTINATION_PATH=$(mktemp -d)
 flagops --use-env
 
 >&2 echo "Building Dependencies"
-helm dependency build ${FLAGOPS_DESTINATION_PATH}
+>&2 helm dependency build ${FLAGOPS_DESTINATION_PATH}
 
 >&2 echo "Infalting Helm Chart"
 helm template $ARGOCD_APP_NAME -n $ARGOCD_APP_NAMESPACE ${FLAGOPS_DESTINATION_PATH}
