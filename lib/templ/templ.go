@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"io"
 	"io/fs"
+	"path/filepath"
+	"slices"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
@@ -24,6 +26,16 @@ type TemplateEngine struct {
 	files   []string
 	path    config.Path
 	funcMap map[string]any
+}
+
+// TODO Move to config
+var ignoreFileExtentions = []string{
+	".tar",
+	".tar.gz",
+	".tgz",
+	".zip",
+	".gz",
+	".7z",
 }
 
 // Parses configured paths and available providers to create list of engine tasks to be executed
@@ -110,6 +122,10 @@ func (te *TemplateEngine) executeFileTemplate(path string) error {
 	data, err := io.ReadAll(file)
 	if err != nil {
 		return err
+	}
+
+	if slices.Contains(ignoreFileExtentions, filepath.Ext(path)) {
+		return te.Output.ExecuteFile(path, data)
 	}
 
 	templ, err := template.New(path).
