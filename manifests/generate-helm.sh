@@ -15,4 +15,4 @@ flagops --use-env
 >&2 helm dependency build ${FLAGOPS_DESTINATION_PATH}
 
 >&2 echo "Infalting Helm Chart"
-helm template $ARGOCD_APP_NAME -n $ARGOCD_APP_NAMESPACE --kube-version $KUBE_API_VERSIONS ${FLAGOPS_DESTINATION_PATH}
+helm template $ARGOCD_APP_NAME -n $ARGOCD_APP_NAMESPACE -a $KUBE_API_VERSIONS ${FLAGOPS_DESTINATION_PATH}
