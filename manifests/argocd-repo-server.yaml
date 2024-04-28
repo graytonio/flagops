@@ -45,6 +45,11 @@ spec:
 
       # flagops with Helm
       containers:
+      - name: argocd-repo-server
+        args:
+          - /usr/local/bin/argocd-repo-server
+          - --loglevel
+          - info
       - name: flagops-helm
         command: [/var/run/argocd/argocd-cmp-server]
         image: quay.io/argoproj/argocd:v2.7.9
