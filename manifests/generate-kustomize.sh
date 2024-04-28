@@ -8,8 +8,8 @@ export FLAGOPS_DESTINATION_TYPE="file"
 export FLAGOPS_DESTINATION_PATH=$(mktemp -d)
 
 # Run Generation
-2>& echo "Executing FlagOps"
+>&2 echo "Executing FlagOps"
 flagops --use-env
 
-2>& echo "Building Kustomize Manifests"
+>&2 echo "Building Kustomize Manifests"
 kustomize build ${FLAGOPS_DESTINATION_PATH}
