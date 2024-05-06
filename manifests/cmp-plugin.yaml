@@ -1,6 +1,20 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: flagops-env
+data:
+  flagops-env.yaml: |
+    envs:
+      production:
+        provider: flagsmith
+        apiKey: <api-key>
+      staging:
+        provider: flagsmith
+        apiKey: <api-key>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: cmp-plugin
 data:
   flagops-kustomize.yaml: |
@@ -73,16 +87,3 @@ data:
           - "/scripts/generate.sh"
       lockRepo: false
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: flagops-env
-data:
-  flagops-env.yaml: |
-    envs:
-      production:
-        provider: flagsmith
-        apiKey: <api-key>
-      staging:
-        provider: flagsmith
-        apiKey: <api-key>
