@@ -2,6 +2,7 @@ package templ
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/open-feature/go-sdk/openfeature"
@@ -13,30 +14,15 @@ func (te *TemplateEngine) getEvaluationContext() openfeature.EvaluationContext {
 }
 
 func (te *TemplateEngine) env(feature string) (any, error) {
-	if strings.Contains(feature, ".") {
+	switch {
+	case strings.Contains(feature, "."): // env "my_flag.subKey"
 		parts := strings.Split(feature, ".")
 		return te.parseObjectFlag(parts[0], parts[1:])
+	case strings.HasSuffix(feature, "_enabled"): // env "my_flag_enabled"
+		return te.parseBooleanFlag(strings.TrimSuffix(feature, "_enabled"))
+	default: // env "my_flag"
+		return te.parseStringFlag(feature)
 	}
-
-	if strings.HasSuffix(feature, "_enabled") {
-		data, err := te.FlagProvider.BooleanValue(context.Background(), strings.TrimSuffix(feature, "_enabled"), false, te.getEvaluationContext())
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
-	}
-
-	data, err := te.FlagProvider.StringValue(context.Background(), feature, "", te.getEvaluationContext())
-	if err != nil {
-		// Edge case where evaluating a disabled flag in some providers results in a null value
-		if strings.Contains(err.Error(), "TYPE_MISMATCH") {
-			return "", nil
-		}
-
-		return nil, err
-	}
-
-	return data, nil
 }
 
 // Fetch feature flag flagKey and interpret the value as a json object. Recursively index the object until the desired key is found
@@ -63,6 +49,33 @@ func (te *TemplateEngine) parseObjectFlag(flagKey string, subKeys []string) (any
 	}
 
 	return value, nil
+}
+
+func (te *TemplateEngine) parseBooleanFlag(flagKey string) (bool, error) {
+	return te.FlagProvider.BooleanValue(context.Background(), flagKey, false, te.getEvaluationContext())
+}
+
+func (te *TemplateEngine) parseStringFlag(flagKey string) (string, error) {
+	iData, err := te.FlagProvider.IntValue(context.Background(), flagKey, -1, te.getEvaluationContext())
+	if err == nil { // If flag can be interpreted as Int
+		return fmt.Sprint(iData), nil
+	}
+
+	fData, err := te.FlagProvider.FloatValue(context.Background(), flagKey, -1, te.getEvaluationContext())
+	if err == nil { // If flag can be interpreted as Float
+		return fmt.Sprint(fData), nil
+	}
+
+	data, err := te.FlagProvider.StringValue(context.Background(), flagKey, "", te.getEvaluationContext())
+	if err != nil {
+		// Edge case where evaluating a disabled flag in some providers results in a null value
+		if strings.Contains(err.Error(), "TYPE_MISMATCH") {
+			return "", nil
+		}
+
+		return "", err
+	}
+	return data, nil
 }
 
 // This has been copied from helm and may be removed as soon as it is retrofited in sprig
