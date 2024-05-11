@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_requests:
+    branches:
+      - main
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        users: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.3'
+      - name: Install Dependencies
+        run: go get .
+      - name: Run Tests
+        run: go test ./... -json > TestResults.json
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlagOps-Tests
+          path: TestResults.json
+  
