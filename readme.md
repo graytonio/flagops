@@ -1,6 +1,6 @@
 # FlagOps
 
-A DevOps tool for generating git ops repositories by combining application templates and environment flag providers.
+A template engine for integrating OpenFeature providers into GitOps and IaC codebases. Allows users to rollout changes, configure applications, and observe critical changes without needing to understand the underlying manifests.
 
 ## Install
 
