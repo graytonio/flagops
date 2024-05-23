@@ -23,7 +23,7 @@ archives:
     files:
       - LICENSE
       - readme.md
-      - manifests/*.sh
+      - scripts/*.sh
     # use zip for windows archives
     format_overrides:
     - goos: windows
