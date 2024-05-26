@@ -9,8 +9,8 @@ const (
 type DestinationType string
 
 const (
-	Git DestinationType = "git"
-	File DestinationType = "file"
+	Git     DestinationType = "git"
+	File    DestinationType = "file"
 	Console DestinationType = "console"
 )
 
@@ -54,6 +54,12 @@ type Destination struct {
 
 	// Do not delete any existing files in destination only template and update specified files
 	UpsertMode bool `mapstructure:"upsert"`
+
+	// Insert string at beginning of templated files
+	Header string `mapstructure:"header"`
+
+	// Insert string at end of templated files
+	Footer string `mapstructure:"footer"`
 }
 
 type Config struct {
