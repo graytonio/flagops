@@ -2,6 +2,7 @@ package templ
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/fs"
 	"path/filepath"
@@ -99,7 +100,7 @@ func (te *TemplateEngine) ScanFiles() error {
 func (te *TemplateEngine) Execute() error {
 	err := te.Output.Init()
 	if err != nil {
-	  return err
+		return err
 	}
 
 	for _, file := range te.files {
@@ -128,10 +129,18 @@ func (te *TemplateEngine) executeFileTemplate(path string) error {
 		return te.Output.ExecuteFile(path, data)
 	}
 
+	if te.path.Destination.Header != "" {
+		data = append([]byte(fmt.Sprintf("%s\n", te.path.Destination.Header)), data...)
+	}
+
+	if te.path.Destination.Footer != "" {
+		data = append(data, []byte(fmt.Sprintf("\n%s", te.path.Destination.Footer))...)
+	}
+
 	templ, err := template.New(path).
 		Delims("[{", "}]").
 		Funcs(te.funcMap).
-		Parse(string(data))
+		Parse(fmt.Sprintf("%s\n%s\n%s", te.path.Destination.Header, string(data), te.path.Destination.Footer))
 	if err != nil {
 		return err
 	}
@@ -139,7 +148,7 @@ func (te *TemplateEngine) executeFileTemplate(path string) error {
 	buf := bytes.NewBuffer([]byte{})
 	err = templ.Execute(buf, nil)
 	if err != nil {
-	  return err
+		return err
 	}
 
 	return te.Output.ExecuteFile(path, buf.Bytes())
