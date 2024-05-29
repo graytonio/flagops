@@ -1,1 +1,3 @@
+[{ env "string_feature_enabled" }]
 [{ env "string_feature" }]
+[{ env "integer_feature" }]

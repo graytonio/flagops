@@ -1,0 +1,6 @@
+[{- if env "enabled_feature_enabled" -}]
+This text exists
+[{- end }]
+[{- if env "disabled_feature_enabled" }]
+This text should not be shown
+[{- end }]

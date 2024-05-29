@@ -1,7 +1,15 @@
+
+SUBDIRS := $(wildcard */)
+
 .PHONY: test
-test: clean
+test: ${SUBDIRS}
 	@./flagops
-	@cmp basic/output.txt basic/expected.txt --silent || (echo "Basic Test Failed output != expected" && exit 1)
+
+	@for f in $^; do \
+		echo "Running [$${f}] test" && \
+		cmp $${f}/output.txt $${f}/expected.txt --silent || (echo "$${f} Test Failed output != expected" && exit 1); \
+	done
+
 	@echo "All Tests Passed"
 
 .PHONY: clean

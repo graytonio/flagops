@@ -9,3 +9,8 @@ paths:
     dest:
       type: file
       path: basic/output.txt
+  - path: conditional/test.txt
+    env: production
+    dest:
+      type: file
+      path: conditional/output.txt
