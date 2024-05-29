@@ -1,0 +1,11 @@
+envs:
+  production:
+    provider: flagsmith
+    apiKey: h8jqBWsXuGqtW4EKY945Cm
+
+paths:
+  - path: basic/test.txt
+    env: production
+    dest:
+      type: file
+      path: basic/output.txt
