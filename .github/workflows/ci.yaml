@@ -23,7 +23,7 @@ jobs:
       - name: Install Dependencies
         run: go get .
       - name: Run Tests
-        run: go test ./... -json > TestResults.json
+        run: go test -v ./... > TestResults.log
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:
