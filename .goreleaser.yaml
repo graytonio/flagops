@@ -34,10 +34,22 @@ snapshot:
   name_template: "{{ incpatch .Version }}-next"
 changelog:
   sort: asc
+
   filters:
     exclude:
       - '^docs:'
       - '^test:'
+      - '^ci:'
+  
+  groups:
+    - title: New Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "Bug fixes"
+      regexp: '^.*?bug(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Other
+      order: 999
       
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
