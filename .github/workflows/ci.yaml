@@ -28,5 +28,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FlagOps-Tests
-          path: TestResults.json
+          path: TestResults.log
   
