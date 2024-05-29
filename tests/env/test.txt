@@ -1,0 +1,3 @@
+[{ env "string_feature" }]
+[{ env "integer_feature" }]
+[{ env "bool_feature_enabled" }]

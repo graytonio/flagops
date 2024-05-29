@@ -91,6 +91,8 @@ github.com/open-feature/go-sdk v1.9.0 h1:1Nyj+XNHfL0rRGZgGCbZ29CHDD57PQJL7Q/2ZbW
 github.com/open-feature/go-sdk v1.9.0/go.mod h1:n5BM4DfvIiKaWWquZnL/yVihcGM5aLsz7rNYE3BkXAM=
 github.com/open-feature/go-sdk-contrib/providers/flagsmith v0.1.4 h1:YfKBV2j43WtlgjFZfL0tizHD6MiL/wgcv2rC3HwRDh4=
 github.com/open-feature/go-sdk-contrib/providers/flagsmith v0.1.4/go.mod h1:m/VoKIYDWaFuPqEW1A/9z/ecps+J8/LZXYpZ6z1yfB8=
+github.com/open-feature/go-sdk-contrib/providers/from-env v0.1.4 h1:zB2nWO6lwSEIeLBQSwjVFA4tnBtRjni+Ylfj/Mjz5Ew=
+github.com/open-feature/go-sdk-contrib/providers/from-env v0.1.4/go.mod h1:bgnc2nFZKNiGRBeQ86MyA5kbiSLYykWtH9AYhT/Y8QY=
 github.com/pelletier/go-toml/v2 v2.1.0 h1:FnwAJ4oYMvbT/34k9zzHuZNrhlz48GB3/s6at6/MHO4=
 github.com/pelletier/go-toml/v2 v2.1.0/go.mod h1:tJU2Z3ZkXwnxa4DPO899bsyIoywizdUvyaeZurnPPDc=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=

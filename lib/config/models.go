@@ -4,6 +4,7 @@ type ProviderType string
 
 const (
 	Flagsmith ProviderType = "flagsmith"
+	FromEnv   ProviderType = "env"
 )
 
 type DestinationType string
