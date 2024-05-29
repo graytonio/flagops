@@ -1,16 +1,23 @@
 envs:
-  production:
+  flagsmith:
     provider: flagsmith
     apiKey: h8jqBWsXuGqtW4EKY945Cm
+  env:
+    provider: env
 
 paths:
   - path: basic/test.txt
-    env: production
+    env: flagsmith
     dest:
       type: file
       path: basic/output.txt
   - path: conditional/test.txt
-    env: production
+    env: flagsmith
     dest:
       type: file
       path: conditional/output.txt
+  - path: env/test.txt
+    env: env
+    dest:
+      type: file
+      path: env/output.txt
