@@ -130,17 +130,19 @@ func (te *TemplateEngine) executeFileTemplate(path string) error {
 	}
 
 	if te.path.Destination.Header != "" {
+		logrus.Info("Adding header")
 		data = append([]byte(fmt.Sprintf("%s\n", te.path.Destination.Header)), data...)
 	}
 
 	if te.path.Destination.Footer != "" {
+		logrus.Info("Adding footer")
 		data = append(data, []byte(fmt.Sprintf("\n%s", te.path.Destination.Footer))...)
 	}
 
 	templ, err := template.New(path).
 		Delims("[{", "}]").
 		Funcs(te.funcMap).
-		Parse(fmt.Sprintf("%s\n%s\n%s", te.path.Destination.Header, string(data), te.path.Destination.Footer))
+		Parse(string(data))
 	if err != nil {
 		return err
 	}
