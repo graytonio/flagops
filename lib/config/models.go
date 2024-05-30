@@ -3,8 +3,9 @@ package config
 type ProviderType string
 
 const (
-	Flagsmith ProviderType = "flagsmith"
-	FromEnv   ProviderType = "env"
+	Flagsmith    ProviderType = "flagsmith"
+	LaunchDarkly ProviderType = "launchdarkly"
+	FromEnv      ProviderType = "env"
 )
 
 type DestinationType string
