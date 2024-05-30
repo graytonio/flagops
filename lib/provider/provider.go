@@ -3,18 +3,22 @@ package provider
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	flagsmithClient "github.com/Flagsmith/flagsmith-go-client/v3"
 	"github.com/go-logr/logr"
 	"github.com/graytonio/flagops/lib/config"
+	ld "github.com/launchdarkly/go-server-sdk/v6"
 	flagsmith "github.com/open-feature/go-sdk-contrib/providers/flagsmith/pkg"
 	fromEnv "github.com/open-feature/go-sdk-contrib/providers/from-env/pkg"
+	ofld "github.com/open-feature/go-sdk-contrib/providers/launchdarkly/pkg"
 	"github.com/open-feature/go-sdk/openfeature"
 )
 
 var providerConfigMap = map[config.ProviderType]providerConfig{
-	config.Flagsmith: configureFlagsmithProvider,
-	config.FromEnv:   configureFromEnvProvider,
+	config.Flagsmith:    configureFlagsmithProvider,
+	config.FromEnv:      configureFromEnvProvider,
+	config.LaunchDarkly: configureLaunchDarklyProvider,
 }
 
 func ConfigureProviders(envs map[string]config.Environment) (map[string]*openfeature.Client, error) {
@@ -38,11 +42,31 @@ type providerConfig func(name string, env config.Environment) (*openfeature.Clie
 func configureFlagsmithProvider(name string, env config.Environment) (*openfeature.Client, error) {
 	client := flagsmithClient.NewClient(env.APIKey)
 	provider := flagsmith.NewProvider(client, flagsmith.WithUsingBooleanConfigValue())
-	openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), provider)
+	err := openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), provider)
+	if err != nil {
+		return nil, err
+	}
 	return openfeature.NewClient(fmt.Sprintf("%s-%s", name, env.Provider)).WithLogger(logr.Discard()), nil
 }
 
 func configureFromEnvProvider(name string, env config.Environment) (*openfeature.Client, error) {
-	openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), &fromEnv.FromEnvProvider{})
+	err := openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), &fromEnv.FromEnvProvider{})
+	if err != nil {
+		return nil, err
+	}
+	return openfeature.NewClient(fmt.Sprintf("%s-%s", name, env.Provider)).WithLogger(logr.Discard()), nil
+}
+
+func configureLaunchDarklyProvider(name string, env config.Environment) (*openfeature.Client, error) {
+	client, err := ld.MakeClient(env.APIKey, 5*time.Second)
+	if err != nil {
+		return nil, err
+	}
+
+	err = openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), ofld.NewProvider(client))
+	if err != nil {
+		return nil, err
+	}
+
 	return openfeature.NewClient(fmt.Sprintf("%s-%s", name, env.Provider)).WithLogger(logr.Discard()), nil
 }
