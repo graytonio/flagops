@@ -12,7 +12,7 @@ Environments are the different feature flag sources that flagops can pull from. 
 ### Supported Providers
 
 - `flagsmith`: [Flagsmith](https://www.flagsmith.com/)
-- `launchdarkly`: [LaunchDarkly](https://launchdarkly.com/)
+- `launchdarkly`: [LaunchDarkly](https://launchdarkly.com/) **BETA**
 - `env`: [FromEnv](https://github.com/open-feature/go-sdk-contrib/tree/main/providers/from-env)
 
 ## Paths
