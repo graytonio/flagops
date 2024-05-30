@@ -11,7 +11,9 @@ Environments are the different feature flag sources that flagops can pull from. 
 
 ### Supported Providers
 
-- `flagsmith`: Flagsmith
+- `flagsmith`: [Flagsmith](https://www.flagsmith.com/)
+- `launchdarkly`: [LaunchDarkly](https://launchdarkly.com/)
+- `env`: [FromEnv](https://github.com/open-feature/go-sdk-contrib/tree/main/providers/from-env)
 
 ## Paths
 
