@@ -48,11 +48,8 @@ type Destination struct {
 	// Output type (file, git)
 	Type DestinationType `mapstructure:"type"`
 
-	// For git type define output git repository
-	Repo string `mapstructure:"repo"`
-
-	// For git type define output git branch. Uses default branch if not set.
-	Branch string `mapstructure:"branch"`
+	// Config for GitRepo Type
+	Git GitRepo `mapstructure:"git"`
 
 	// Root path of output. For git type relative to repo root
 	Path string `mapstructure:"path"`
@@ -65,6 +62,23 @@ type Destination struct {
 
 	// Insert string at end of templated files
 	Footer string `mapstructure:"footer"`
+}
+
+type GitRepo struct {
+	// For git type define output git repository
+	Repo string `mapstructure:"repo"`
+
+	// For git type define output git branch. Uses default branch if not set.
+	Branch string `mapstructure:"branch"`
+
+	// Authentication used for git type. Possible to use for other types later.
+	Auth Auth `mapstructure:"auth"`
+}
+
+type Auth struct {
+	Username   string `mapstructure:"username"`
+	Password   string `mapstructure:"password"`
+	PrivateKey string `mapstructure:"private_key"`
 }
 
 type Config struct {

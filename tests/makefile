@@ -7,7 +7,7 @@ export bool_feature = {"defaultVariant":"bool","variants":[{"name":"bool","targe
 
 .PHONY: test
 test: ${SUBDIRS}
-	@./flagops
+	@./flagops --verbose
 
 	@for f in $^; do \
 		echo "Running [$${f}] test" && \

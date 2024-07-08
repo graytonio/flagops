@@ -56,30 +56,39 @@ func executeEnvConfig() error {
 
 	upsertMode := false
 	rawUpsertMode := os.Getenv("FLAGOPS_UPSERT")
-	
+
 	if rawUpsertMode != "" {
 		upsertMode, err = strconv.ParseBool(os.Getenv("FLAGOPS_UPSERT"))
 		if err != nil {
-		  return err
+			return err
 		}
 	}
 
 	source := config.Path{
-		Path: os.Getenv("FLAGOPS_SOURCE_PATH"),
-		Env: os.Getenv("FLAGOPS_ENVIRONMENT"),
-		Identity: os.Getenv("FLAGOPS_IDENTITY"),
+		Path:       os.Getenv("FLAGOPS_SOURCE_PATH"),
+		Env:        os.Getenv("FLAGOPS_ENVIRONMENT"),
+		Identity:   os.Getenv("FLAGOPS_IDENTITY"),
 		Properties: parseEnvProps(),
 		Destination: config.Destination{
 			Type: config.DestinationType(os.Getenv("FLAGOPS_DESTINATION_TYPE")),
 			Path: os.Getenv("FLAGOPS_DESTINATION_PATH"),
-			Repo: os.Getenv("FLAGOPS_DESTINATION_REPO"),
+			// Repo: os.Getenv("FLAGOPS_DESTINATION_REPO"),
+			Git: config.GitRepo{
+				Repo:   os.Getenv("FLAGOPS_DESTINATION_REPO"),
+				Branch: os.Getenv("FLAGOPS_DESTINATION_BRANCH"),
+				Auth: config.Auth{
+					Username:   os.Getenv("FLAGOPS_DESTINATION_AUTH_USER"),
+					Password:   os.Getenv("FLAGOPS_DESTINATION_AUTH_PASS_LOOKUP"),
+					PrivateKey: os.Getenv("FLAGOPS_DESTINATION_AUTH_PRIVATE_KEY_LOOKUP"),
+				},
+			},
 			UpsertMode: upsertMode,
 		},
 	}
 
 	engine, err := templ.NewTemplateEngine(source, providers[source.Env])
 	if err != nil {
-	  return err
+		return err
 	}
 
 	return engine.Execute()
@@ -93,7 +102,7 @@ func parseEnvProps() map[string]any {
 		if !strings.HasPrefix(e, "FLAGOPS_PROP_") {
 			continue
 		}
-		
+
 		parts := strings.Split(e, "=")
 		key := strings.ToLower(strings.TrimPrefix(parts[0], "FLAGOPS_PROP_"))
 		value := parts[1]
