@@ -3,4 +3,4 @@ build:
 
 build-test:
 	goreleaser build --snapshot --clean --single-target --output tests/flagops
-	$(MAKE) -C tests 
+	$(MAKE) -C tests

@@ -51,6 +51,9 @@ type Destination struct {
 	// For git type define output git repository
 	Repo string `mapstructure:"repo"`
 
+	// For git type define output git branch. Uses default branch if not set.
+	Branch string `mapstructure:"branch"`
+
 	// Root path of output. For git type relative to repo root
 	Path string `mapstructure:"path"`
 

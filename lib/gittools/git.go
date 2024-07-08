@@ -15,7 +15,8 @@ func Clone(url string) (*git.Repository, error) {
 	}
 
 	repo, err := git.Clone(memory.NewStorage(), memfs.New(), &git.CloneOptions{
-		URL: url,
+		URL:    url,
+		Mirror: true,
 	})
 	if err != nil {
 		return nil, err

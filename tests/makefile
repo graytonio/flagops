@@ -11,7 +11,7 @@ test: ${SUBDIRS}
 
 	@for f in $^; do \
 		echo "Running [$${f}] test" && \
-		cmp $${f}/output.txt $${f}/expected.txt --silent || (echo "$${f} Test Failed output != expected" && exit 1); \
+		$(MAKE) -C $${f}; \
 	done
 
 	@echo "All Tests Passed"
