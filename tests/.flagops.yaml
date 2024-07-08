@@ -6,31 +6,33 @@ envs:
     provider: env
 
 paths:
-  # - path: basic/test.txt
-  #   env: flagsmith
-  #   dest:
-  #     type: file
-  #     path: basic/output.txt
-  # - path: conditional/test.txt
-  #   env: flagsmith
-  #   dest:
-  #     type: file
-  #     path: conditional/output.txt
-  # - path: env/test.txt
-  #   env: env
-  #   dest:
-  #     type: file
-  #     path: env/output.txt
+  - path: basic/test.txt
+    env: flagsmith
+    dest:
+      type: file
+      path: basic/output.txt
+  - path: conditional/test.txt
+    env: flagsmith
+    dest:
+      type: file
+      path: conditional/output.txt
+  - path: env/test.txt
+    env: env
+    dest:
+      type: file
+      path: env/output.txt
   - path: git/test.txt
     env: flagsmith
     dest:
       type: git
-      repo: git@github.com:graytonio/flagops-test-repo.git
+      git:
+        repo: git@github.com:graytonio/flagops-test-repo.git
       path: git-test/test.txt
   - path: git/test.txt
     env: flagsmith
     dest:
       type: git
-      repo: git@github.com:graytonio/flagops-test-repo.git
+      git:
+        repo: git@github.com:graytonio/flagops-test-repo.git
+        branch: test-branch
       path: git-test/test.txt
-      branch: test-branch

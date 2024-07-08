@@ -28,23 +28,26 @@ func newGitOutput(conf config.Path) (*GitOutput, error) {
 
 // Init implements Output.
 func (g *GitOutput) Init() error {
-	repo, err := gittools.Clone(g.conf.Destination.Repo)
+	repo, err := gittools.Clone(g.conf.Destination.Git)
 	if err != nil {
+		logrus.WithError(err).Debug("error processing git destination")
 		return err
 	}
 
 	w, err := repo.Worktree()
 	if err != nil {
+		logrus.WithError(err).Debug("error processing git destination")
 		return err
 	}
 
 	// Checkout branch if set
-	if g.conf.Destination.Branch != "" {
+	if g.conf.Destination.Git.Branch != "" {
 		err = w.Checkout(&git.CheckoutOptions{
-			Branch: plumbing.NewBranchReferenceName(g.conf.Destination.Branch),
+			Branch: plumbing.NewBranchReferenceName(g.conf.Destination.Git.Branch),
 			Force:  true,
 		})
 		if err != nil {
+			logrus.WithError(err).Debug("error processing git destination")
 			return err
 		}
 	}
@@ -55,6 +58,7 @@ func (g *GitOutput) Init() error {
 	if g.conf.Destination.UpsertMode {
 		err = cleanFSDestination(g.fs, g.conf.Path)
 		if err != nil {
+			logrus.WithError(err).Debug("error processing git destination")
 			return err
 		}
 	}
@@ -66,17 +70,20 @@ func (g *GitOutput) Init() error {
 func (g *GitOutput) ExecuteFile(path string, content []byte) error {
 	destPath, err := getFileOutputDestination(g.conf.Path, g.conf.Destination.Path, path)
 	if err != nil {
+		logrus.WithError(err).Debug("error processing git destination")
 		return err
 	}
 
 	f, err := g.fs.Create(destPath)
 	if err != nil {
+		logrus.WithError(err).Debug("error processing git destination")
 		return err
 	}
 	defer f.Close()
 
 	_, err = f.Write(content)
 	if err != nil {
+		logrus.WithError(err).Debug("error processing git destination")
 		return err
 	}
 
@@ -87,11 +94,13 @@ func (g *GitOutput) ExecuteFile(path string, content []byte) error {
 func (g *GitOutput) Finalize() error {
 	w, err := g.repo.Worktree()
 	if err != nil {
+		logrus.WithError(err).Debug("error processing git destination")
 		return err
 	}
 
 	stat, err := w.Status()
 	if err != nil {
+		logrus.WithError(err).Debug("error processing git destination")
 		return err
 	}
 
@@ -104,6 +113,7 @@ func (g *GitOutput) Finalize() error {
 		All: true,
 	})
 	if err != nil {
+		logrus.WithError(err).Debug("error processing git destination")
 		return err
 	}
 
@@ -116,11 +126,13 @@ func (g *GitOutput) Finalize() error {
 		},
 	})
 	if err != nil {
+		logrus.WithError(err).Debug("error processing git destination")
 		return err
 	}
 
 	err = g.repo.Push(&git.PushOptions{})
 	if err != nil {
+		logrus.WithError(err).Debug("error processing git destination")
 		return err
 	}
 
