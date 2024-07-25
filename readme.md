@@ -54,4 +54,8 @@ This will read the config file from the current directory and output the templat
 - [Getting Started](https://www.graytonward.com/blog/hello-world-for-flagops/)
 - [Configuration](/docs/configuration.md)
 - [Templates](/docs/templates.md)
-- [ArgoCD Plugin](/docs/installation.md)
+
+### Deployment Options
+
+- [ArgoCD Plugin](/docs/argocd-plugin.md)
+- [CI Pipeline](/docs/ci-deployment.md)
