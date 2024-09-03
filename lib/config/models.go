@@ -25,6 +25,9 @@ type Environment struct {
 
 	// Environment variable to source the api key from instead of apiKey
 	EnvKey string `mapstructure:"envKey"`
+
+	// Customer baseURL to send api requests for provider
+	BaseURL string `mapstructure:"baseURL"`
 }
 
 type Path struct {

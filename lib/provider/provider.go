@@ -40,7 +40,12 @@ func ConfigureProviders(envs map[string]config.Environment) (map[string]*openfea
 type providerConfig func(name string, env config.Environment) (*openfeature.Client, error)
 
 func configureFlagsmithProvider(name string, env config.Environment) (*openfeature.Client, error) {
-	client := flagsmithClient.NewClient(env.APIKey)
+	clientOpts := []flagsmithClient.Option{}
+	if env.BaseURL != "" {
+		clientOpts = append(clientOpts, flagsmithClient.WithBaseURL(env.BaseURL))
+	}
+	
+	client := flagsmithClient.NewClient(env.APIKey, clientOpts...)
 	provider := flagsmith.NewProvider(client, flagsmith.WithUsingBooleanConfigValue())
 	err := openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), provider)
 	if err != nil {
