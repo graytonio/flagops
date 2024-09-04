@@ -1,7 +1,7 @@
 envs:
   flagsmith:
     provider: flagsmith
-    apiKey: h8jqBWsXuGqtW4EKY945Cm
+    apiKey: 4r9BZZ4Et2Kos6bj9VTx9S
   env:
     provider: env
 
