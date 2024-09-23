@@ -7,6 +7,7 @@ import (
 
 	flagsmithClient "github.com/Flagsmith/flagsmith-go-client/v3"
 	"github.com/go-logr/logr"
+	flagopsds "github.com/graytonio/flagops-data-store-openfeature-provider-go/pkg"
 	"github.com/graytonio/flagops/lib/config"
 	ld "github.com/launchdarkly/go-server-sdk/v6"
 	flagsmith "github.com/open-feature/go-sdk-contrib/providers/flagsmith/pkg"
@@ -15,10 +16,12 @@ import (
 	"github.com/open-feature/go-sdk/openfeature"
 )
 
+type providerConfig func(name string, env config.Environment) (openfeature.FeatureProvider, error)
+
 var providerConfigMap = map[config.ProviderType]providerConfig{
-	config.Flagsmith:    configureFlagsmithProvider,
-	config.FromEnv:      configureFromEnvProvider,
-	config.LaunchDarkly: configureLaunchDarklyProvider,
+	config.Flagsmith:    buildFlagsmithProvider,
+	config.FromEnv:      buildEnvProvider,
+	config.LaunchDarkly: buildLaunchDarklyProvider,
 }
 
 func ConfigureProviders(envs map[string]config.Environment) (map[string]*openfeature.Client, error) {
@@ -27,51 +30,47 @@ func ConfigureProviders(envs map[string]config.Environment) (map[string]*openfea
 		if cf, ok := providerConfigMap[env.Provider]; !ok {
 			return nil, fmt.Errorf("unsupported provider type: %s", env.Provider)
 		} else {
-			client, err := cf(name, env)
+			provider, err := cf(name, env)
 			if err != nil {
 				return nil, errors.Join(err, errors.New("error configuring provider"))
 			}
-			clients[name] = client
+
+			if env.Datastore.Enabled {
+				provider, err = flagopsds.NewProvider(env.Datastore.BaseURL, provider)
+				if err != nil {
+				  return nil, errors.Join(err, errors.New("error configuring datastore"))
+				}
+			}
+
+			err = openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), provider)
+			if err != nil {
+				return nil, errors.Join(err, errors.New("error setting provider"))
+			}
+			clients[name] = openfeature.NewClient(fmt.Sprintf("%s-%s", name, env.Provider)).WithLogger(logr.Discard())
 		}
 	}
 	return clients, nil
 }
 
-type providerConfig func(name string, env config.Environment) (*openfeature.Client, error)
-
-func configureFlagsmithProvider(name string, env config.Environment) (*openfeature.Client, error) {
+func buildFlagsmithProvider(name string, env config.Environment) (openfeature.FeatureProvider, error) {
 	clientOpts := []flagsmithClient.Option{}
 	if env.BaseURL != "" {
 		clientOpts = append(clientOpts, flagsmithClient.WithBaseURL(env.BaseURL))
 	}
 	
 	client := flagsmithClient.NewClient(env.APIKey, clientOpts...)
-	provider := flagsmith.NewProvider(client, flagsmith.WithUsingBooleanConfigValue())
-	err := openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), provider)
-	if err != nil {
-		return nil, err
-	}
-	return openfeature.NewClient(fmt.Sprintf("%s-%s", name, env.Provider)).WithLogger(logr.Discard()), nil
+	return flagsmith.NewProvider(client, flagsmith.WithUsingBooleanConfigValue()), nil
 }
 
-func configureFromEnvProvider(name string, env config.Environment) (*openfeature.Client, error) {
-	err := openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), &fromEnv.FromEnvProvider{})
-	if err != nil {
-		return nil, err
-	}
-	return openfeature.NewClient(fmt.Sprintf("%s-%s", name, env.Provider)).WithLogger(logr.Discard()), nil
+func buildEnvProvider(name string, env config.Environment) (openfeature.FeatureProvider, error) {
+	return &fromEnv.FromEnvProvider{}, nil
 }
 
-func configureLaunchDarklyProvider(name string, env config.Environment) (*openfeature.Client, error) {
+func buildLaunchDarklyProvider(name string, env config.Environment) (openfeature.FeatureProvider, error) {
 	client, err := ld.MakeClient(env.APIKey, 5*time.Second)
 	if err != nil {
 		return nil, err
 	}
 
-	err = openfeature.SetNamedProvider(fmt.Sprintf("%s-%s", name, env.Provider), ofld.NewProvider(client))
-	if err != nil {
-		return nil, err
-	}
-
-	return openfeature.NewClient(fmt.Sprintf("%s-%s", name, env.Provider)).WithLogger(logr.Discard()), nil
+	return ofld.NewProvider(client), nil
 }

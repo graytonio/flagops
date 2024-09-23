@@ -28,6 +28,20 @@ type Environment struct {
 
 	// Customer baseURL to send api requests for provider
 	BaseURL string `mapstructure:"baseURL"`
+
+	// Configures use of the flagops datastore
+	Datastore DatastoreConfig `mapstructure:"datastore"`
+}
+
+type DatastoreConfig struct {
+	// Enable using flagops datastore
+	Enabled bool `mapstructure:"enabled"`
+
+	// Base url of flagops datastore deployment
+	BaseURL string `mapstructure:"baseURL"`
+
+	// API Key to authenticate to datastore
+	APIKey string `mapstructure:"apiKey"`
 }
 
 type Path struct {
